@@ -5,19 +5,24 @@ namespace Plancksize
 {
     public class PlanckGCaster : MonoBehaviour
     {
-        public float attractorRadius;
-        public float gravityForce = -10;
+        public float gravityRadius = 1;
+        [Space(10)]
+        public bool useMass = false;
+        public float gravityConstant = -10;
+        [Tooltip("Ignored if not using Mass")]
+        public float mass = 1;
+        [Space(10)]
         public LayerMask gEffectLayer;
 
         [HideInInspector]
         public Transform attractorTransform;
-        [SerializeField]
+        [HideInInspector]
         public List<Collider2D> gPool = new List<Collider2D>();
 
         private void OnDrawGizmosSelected()
         {
             Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(transform.position, attractorRadius);
+            Gizmos.DrawWireSphere(transform.position, gravityRadius);
         }
 
         private void Awake()
@@ -44,7 +49,7 @@ namespace Plancksize
         //Detect valid objects in Gravity Wheel zone
         private List<Collider2D> SetGPoolObjects()
         {
-            return new List<Collider2D>(Physics2D.OverlapCircleAll(attractorTransform.position, attractorRadius, gEffectLayer));
+            return new List<Collider2D>(Physics2D.OverlapCircleAll(attractorTransform.position, gravityRadius, gEffectLayer));
         }
 
         //Call for attracted object force application
@@ -55,7 +60,7 @@ namespace Plancksize
                 if (objectPool[i].GetComponent<PlanckGUser>() == null)
                     objectPool[i].gameObject.AddComponent<PlanckGUser>();
             
-                objectPool[i].GetComponent<PlanckGUser>().GPull(this);
+                objectPool[i].GetComponent<PlanckGUser>().GPull(this, useMass);
             }
         }
     }

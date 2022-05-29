@@ -4,8 +4,10 @@ namespace Plancksize
 {
     public class PlanckGUser : MonoBehaviour
     {
-        [SerializeField]
-        private bool gRotation = true;
+        public bool gRotation = true;
+        public float mass = 1;
+
+        [Space(20)]
         [SerializeField]
         private PlanckGCaster gCaster;
 
@@ -13,8 +15,9 @@ namespace Plancksize
         Collider2D bodyCollider;
         Rigidbody2D bodyRB;
 
-        [SerializeField]
+        //[SerializeField]
         private float currentGScale;
+        private float appliedForce;
 
         private void Awake()
         {
@@ -45,20 +48,24 @@ namespace Plancksize
             if (dist <= 0) currentGScale = 1;
             else
             {
-                currentGScale = Mathf.Pow(Mathf.InverseLerp(caster.attractorRadius, 0, dist), 2);
+                currentGScale = Mathf.Pow(Mathf.InverseLerp(caster.gravityRadius, 0, dist), 2);
             }
 
             return currentGScale;
         }
 
         //Apply G-Force
-        public void GPull(PlanckGCaster caster)
+        public void GPull(PlanckGCaster caster, bool useMasses = false)
         {
-            Vector2 gForceDirection = caster.attractorTransform.position - bodyTransform.position;
-            bodyRB.AddForce(gForceDirection.normalized * -caster.gravityForce * 100 * gScale(caster) * Time.fixedDeltaTime);
+            if (useMasses)
+            {
+                appliedForce = -(caster.mass * mass * -(caster.gravityConstant));
+            }
+            else
+                appliedForce = caster.gravityConstant;
 
-            if (gCaster == null)
-                gCaster = caster;
+            Vector2 gForceDirection = caster.attractorTransform.position - bodyTransform.position;
+            bodyRB.AddForce(gForceDirection.normalized * -appliedForce * 10 * gScale(caster) * Time.fixedDeltaTime);
         }
 
         //Apply rotation towards G-Force Center
